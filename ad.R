@@ -1,11 +1,13 @@
 library(dplyr)
 
 
-# MASS-VOLUME -------------------------------------------------------------
 
+# AREA-UNDER-CURVE --------------------------------------------------------
 auc <- function(x,y){
   return(sum((x-lag(x))*(y+lead(y))/2))
 }
+
+# MASS-VOLUME -------------------------------------------------------------
 mv <- function(axis_alpha, volume_support, s_unif, s_X, n_generated){
   n <- length(s_X)
   s_X_order <- order(s_X)
@@ -24,6 +26,7 @@ mv <- function(axis_alpha, volume_support, s_unif, s_X, n_generated){
   return(list(auc_mv = auc(axis_alpha, mv), mv = mv))
 }
 
+# EXCESS-MASS -------------------------------------------------------------
 em <- function(t, t_max, volume_support, s_unif, s_X, n_generated){
   EM_t <- numeric(length(t))
   n <- length(s_X)
@@ -40,6 +43,9 @@ em <- function(t, t_max, volume_support, s_unif, s_X, n_generated){
   auc_em <- auc(t[1:amax], EM_t[1:amax])
   return(list(auc_em=auc_em, EM_t=EM_t, amax=amax))
 }
+
+
+# GENERATOR + SCORING -----------------------------------------------------
 
 generator <- function(n){
   return(rnorm(n,0,1)+rnorm(n,10,1))
