@@ -1,36 +1,6 @@
 library(dplyr)
 
 
-# DATA --------------------------------------------------------------------
-
-n <- 1000
-x <- rnorm(n,0,1)
-hist(x)
-
-
-# SCORING FUNCTION --------------------------------------------------------
-
-s <- dnorm(x,0,1)
-plot(x,s)
-
-
-# UNIMODALITY STUDY -------------------------------------------------------
-
-bw <- 1
-a <- density(x, bw)
-plot(a$x, a$y)
-
-estimate_mode <- function(bw, x){
-  d <- density(x,bw)
-  mode <- d$x[which.max(d$y)]
-  return(mode)
-}
-x <- c(rnorm(n,0,1),rnorm(1000,5,1.5))
-bw <- seq(1e-5, 1, length.out = 100)
-est_mode <- lapply(bw, estimate_mode, x)
-plot(bw, est_mode)
-
-
 # MASS-VOLUME -------------------------------------------------------------
 
 auc <- function(x,y){
@@ -71,17 +41,23 @@ em <- function(t, t_max, volume_support, s_unif, s_X, n_generated){
   return(list(auc_em=auc_em, EM_t=EM_t, amax=amax))
 }
 
+generator <- function(n){
+  return(rnorm(n,0,1)+rnorm(n,10,1))
+}
+scoring <- function(x){
+  return(dnorm(x,0,1)+dnorm(x,10,1))
+}
 
 n <- 1000
-x <- rnorm(n, 0, 1)
-s_X <- dnorm(x, 0, 1)
+x <- generator(n)
+s_X <- scoring(x)
 
 lim_inf <- min(x)
 lim_sup <- max(x)
 volume_support <- prod(lim_sup - lim_inf)
 n_generated <- 10000
 unif <- runif(n_generated, lim_inf, lim_sup)
-s_unif <- dnorm(unif, 0, 1)
+s_unif <- scoring(unif)
 alpha_min <- 0
 alpha_max <- 0.999
 axis_alpha <- seq(alpha_min, alpha_max, 0.0001)
