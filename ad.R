@@ -28,7 +28,7 @@ mv <- function(axis_alpha, volume_support, s_unif, s_X, n_generated){
   return(list(auc_mv = auc(axis_alpha, mv), mv = mv, threshold=threshold))
 }
 
-i <- 1
+i <- 10
 alpha <- axis_alpha[i]
 u <- threshold[i]
 mass <- seq(0,1,length.out = length(s_X))
@@ -39,12 +39,20 @@ data.frame(mass, s_X, s_X_order, alpha, u) %>%
   ggplot2::geom_vline(ggplot2::aes(xintercept=1-alpha), linetype="dashed")+
   ggplot2::geom_hline(ggplot2::aes(yintercept=u), linetype="dashed")
 
-data.frame(unif, s_unif, u) %>% 
+plot(s_unif[order(s_unif)])
+plot(unif,s_unif)
+tol <- 1e-6
+cut_points <- unif[abs(s_unif - u) < tol]
+# cut_points <- c(-2,-1,0,1)
+cut_points <- matrix(sort(cut_points), ncol=2, byrow = T) %>% as.data.frame()
+data.frame(unif, s_unif, u, cut_points) %>% 
   dplyr::mutate(f = s_unif >= u) %>% 
   ggplot2::ggplot()+
-  ggplot2::geom_area(data=. %>% filter(f), ggplot2::aes(x=unif, y=s_unif))+
+  ggplot2::geom_area(data=. %>% filter(f), ggplot2::aes(x=unif, y=s_unif), fill="red")+
   ggplot2::geom_line(ggplot2::aes(x=unif, y=s_unif), size=2)+
-  ggplot2::geom_hline(ggplot2::aes(yintercept=u), linetype="dashed")
+  ggplot2::geom_hline(ggplot2::aes(yintercept=u), linetype="dashed")+
+  ggplot2::geom_segment(data=cut_points, ggplot2::aes(x=V1,y=-0.1,xend=V2,yend=-0.1),
+                        arrow = ggplot2::arrow(length = grid::unit(10, 'pt'), type = "closed", angle=15, ends = "both"))
 
 
 # EXCESS-MASS -------------------------------------------------------------
