@@ -39,16 +39,15 @@ data.frame(mass, s_X, s_X_order, alpha, u) %>%
   ggplot2::geom_vline(ggplot2::aes(xintercept=1-alpha), linetype="dashed")+
   ggplot2::geom_hline(ggplot2::aes(yintercept=u), linetype="dashed")
 
-plot(s_unif[order(s_unif)])
-plot(unif,s_unif)
-tol <- 1e-6
+
+tol <- 1e-6 # volume_support/n_generated
 cut_points <- unif[abs(s_unif - u) < tol]
-# cut_points <- c(-2,-1,0,1)
 cut_points <- matrix(sort(cut_points), ncol=2, byrow = T) %>% as.data.frame()
 data.frame(unif, s_unif, u, cut_points) %>% 
   dplyr::mutate(f = s_unif >= u) %>% 
   ggplot2::ggplot()+
   ggplot2::geom_area(data=. %>% filter(f), ggplot2::aes(x=unif, y=s_unif), fill="red")+
+  # ggplot2::geom_ribbon(data=. %>% filter(f), ggplot2::aes(x=unif, ymin=u, ymax=s_unif), fill="red")+
   ggplot2::geom_line(ggplot2::aes(x=unif, y=s_unif), size=2)+
   ggplot2::geom_hline(ggplot2::aes(yintercept=u), linetype="dashed")+
   ggplot2::geom_segment(data=cut_points, ggplot2::aes(x=V1,y=-0.1,xend=V2,yend=-0.1),
