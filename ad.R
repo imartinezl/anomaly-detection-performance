@@ -41,15 +41,19 @@ data.frame(mass, s_X, alpha, u) %>%
   ggplot2::geom_hline(ggplot2::aes(yintercept=u), linetype="dashed")
 
 
-y_tol <- diff(range(s_unif))/n_generated # 1e-5
+y_tol <- diff(range(s_unif))/n_generated
+y_tol <- diff(range(s_X))/length(s_X)
+y_tol <- quantile(diff(sort(s_X)), 0.9)
 x_tol <- volume_support/n_generated
 xp <- unif[abs(s_unif - u) < y_tol]
+xp
 cut_points <- data.frame(xp) %>% 
   dplyr::arrange(xp) %>% 
   dplyr::mutate(xp_next = lead(xp),
                 xp_sep = xp_next-xp,
                 good = xp_sep > x_tol) %>% 
   dplyr::filter(good) %>% 
+  # then select only even rows
   dplyr::select(xp, xp_next)
 
 # cut_points <- unif[abs(s_unif - u) < tol]
@@ -89,13 +93,13 @@ em <- function(t, t_max, volume_support, s_unif, s_X, n_generated){
 # GENERATOR + SCORING -----------------------------------------------------
 
 true_density <- function(x){
-  return(dnorm(x,0,1))
+  return(dnorm(x,0,1)+dnorm(x,10,1))
 }
 generator <- function(n){
-  return(c(rnorm(n,0,1)))
+  return(c(rnorm(n,0,1),rnorm(n,10,1)))
 }
 scoring <- function(x){
-  return(dnorm(x,0,1.5))
+  return(dnorm(x,0,1.5)+dnorm(x,10,1))
 }
 
 n <- 1000
