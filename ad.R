@@ -30,19 +30,32 @@ mv <- function(axis_alpha, volume_support, s_unif, s_X, n_generated){
 
 i <- 10
 alpha <- axis_alpha[i]
-u <- threshold[i]
+u <- mv_result$threshold[i]
 mass <- seq(0,1,length.out = length(s_X))
-data.frame(mass, s_X, s_X_order, alpha, u) %>% 
+data.frame(mass, s_X, alpha, u) %>% 
+  dplyr::mutate(s_X_sorted = sort(s_X)) %>% 
   ggplot2::ggplot()+
-  ggplot2::geom_line(ggplot2::aes(x=mass, y=s_X[s_X_order]), size=2)+
+  ggplot2::geom_line(ggplot2::aes(x=mass, y=s_X_sorted), size=2)+
   ggplot2::geom_point(ggplot2::aes(x=1-alpha,y=u), color="red")+
   ggplot2::geom_vline(ggplot2::aes(xintercept=1-alpha), linetype="dashed")+
   ggplot2::geom_hline(ggplot2::aes(yintercept=u), linetype="dashed")
 
 
-tol <- 1e-6 # volume_support/n_generated
-cut_points <- unif[abs(s_unif - u) < tol]
-cut_points <- matrix(sort(cut_points), ncol=2, byrow = T) %>% as.data.frame()
+y_tol <- diff(range(s_unif))/n_generated # 1e-5
+x_tol <- volume_support/n_generated
+xp <- unif[abs(s_unif - u) < y_tol]
+cut_points <- data.frame(xp) %>% 
+  dplyr::arrange(xp) %>% 
+  dplyr::mutate(xp_next = lead(xp),
+                xp_sep = xp_next-xp,
+                good = xp_sep > x_tol) %>% 
+  dplyr::filter(good) %>% 
+  dplyr::select(xp, xp_next)
+
+# cut_points <- unif[abs(s_unif - u) < tol]
+# cut_points <- matrix(sort(cut_points), ncol=2, byrow = T) %>% 
+#   as.data.frame() %>%
+#   `colnames<-`(c("xp","xp_next"))
 data.frame(unif, s_unif, u, cut_points) %>% 
   dplyr::mutate(f = s_unif >= u) %>% 
   ggplot2::ggplot()+
@@ -50,7 +63,7 @@ data.frame(unif, s_unif, u, cut_points) %>%
   # ggplot2::geom_ribbon(data=. %>% filter(f), ggplot2::aes(x=unif, ymin=u, ymax=s_unif), fill="red")+
   ggplot2::geom_line(ggplot2::aes(x=unif, y=s_unif), size=2)+
   ggplot2::geom_hline(ggplot2::aes(yintercept=u), linetype="dashed")+
-  ggplot2::geom_segment(data=cut_points, ggplot2::aes(x=V1,y=-0.1,xend=V2,yend=-0.1),
+  ggplot2::geom_segment(data=cut_points, ggplot2::aes(x=xp, y=-0.1, xend=xp_next, yend=-0.1),
                         arrow = ggplot2::arrow(length = grid::unit(10, 'pt'), type = "closed", angle=15, ends = "both"))
 
 
