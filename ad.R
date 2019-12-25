@@ -4,7 +4,7 @@ library(dplyr)
 
 # AREA-UNDER-CURVE --------------------------------------------------------
 auc <- function(x,y){
-  return(sum((x-lag(x))*(y+lead(y))/2))
+  return(sum((x-lag(x))*(y+lead(y))/2,na.rm=T))
 }
 
 # MASS-VOLUME -------------------------------------------------------------
@@ -28,7 +28,7 @@ mv <- function(axis_alpha, volume_support, s_unif, s_X, n_generated){
   return(list(auc_mv = auc(axis_alpha, mv), mv = mv, threshold=threshold))
 }
 
-i <- 991
+i <- 90
 alpha <- axis_alpha[i]
 u <- mv_result$threshold[i]
 mass <- seq(0,1,length.out = length(s_X))
@@ -97,19 +97,20 @@ generator <- function(n){
   return(c(rnorm(n,0,1),rnorm(n,10,1)))
 }
 scoring <- function(x){
-  return(dnorm(x,0,1.5)+dnorm(x,10,1))
+  return(dnorm(x,0,1.5)+dnorm(x,10,1.2))
 }
 
 n <- 1000
-x <- generator(n)
-f_X <- true_density(x)
-s_X <- scoring(x)
+X <- generator(n)
+f_X <- true_density(X)
+s_X <- scoring(X)
 
-lim_inf <- min(x)
-lim_sup <- max(x)
+lim_inf <- min(X)
+lim_sup <- max(X)
 volume_support <- prod(lim_sup - lim_inf)
 n_generated <- 10000
 unif <- runif(n_generated, lim_inf, lim_sup)
+f_unif <- true_density(unif)
 s_unif <- scoring(unif)
 alpha_min <- 0.9
 alpha_max <- 0.999
@@ -118,16 +119,29 @@ axis_alpha <- seq(alpha_min, alpha_max, 0.0001)
 mv_result <- mv(axis_alpha, volume_support, s_unif, s_X, n_generated)
 plot(axis_alpha, mv_result$mv)
 
-
-data.frame(x, s_X, f_X) %>%
-  tidyr::gather(key,value, s_X, f_X) %>% 
+data.frame(alpha=axis_alpha, mv=mv_result$mv, auc_mv=mv_result$auc_mv) %>% 
   ggplot2::ggplot()+
-  ggplot2::geom_line(ggplot2::aes(x=x, y=value, color=key), size=2)+
+  ggplot2::geom_line(ggplot2::aes(x=alpha, y=mv), size=2)+
+  ggplot2::geom_text(ggplot2::aes(x=alpha[1], y=mv[1], label=round(auc_mv,2)), check_overlap = T)
+
+# data.frame(x, s_X, f_X) %>%
+  # tidyr::gather(key,value, s_X, f_X) %>% 
+data.frame(X=unif, Scoring=s_unif, True_Density=f_unif) %>%
+  tidyr::gather(key,value, -X) %>% 
+  ggplot2::ggplot()+
+  ggplot2::geom_line(ggplot2::aes(x=X, y=value, color=key), size=2)+
   ggplot2::geom_hline(yintercept = 0)+
   ggplot2::geom_vline(xintercept = lim_inf, linetype="dashed")+
   ggplot2::geom_vline(xintercept = lim_sup, linetype="dashed")+
-  ggplot2::geom_segment(ggplot2::aes(x=lim_inf, y=-0.1, xend=lim_sup, yend=-0.1),
-                        arrow = ggplot2::arrow(length = grid::unit(10, 'pt'), type = "closed", angle=15, ends = "both"))
+  ggplot2::geom_segment(ggplot2::aes(x=lim_inf, y=-0.05, xend=lim_sup, yend=-0.05), alpha=0.01,
+                        arrow = ggplot2::arrow(length = grid::unit(10, 'pt'), type = "closed", angle=15, ends = "both"))+
+  ggplot2::geom_label(x=(lim_inf+lim_sup)/2, y=-0.05, label="Volume support", check_overlap = T)+
+  ggplot2::scale_color_manual(name=NULL, values=c("red","blue"))+
+  ggplot2::labs(x="X",y="Density")+
+  # ggplot2::ylim(c(-1,NA))+
+  # ggplot2::theme_minimal(base_family = "Roboto Condensed")+
+  hrbrthemes::theme_ipsum_rc()+
+  ggplot2::theme(legend.position = "top")
 
 
 
@@ -136,3 +150,4 @@ t <- seq(0, 100 / volume_support, by=0.01 / volume_support)
 t_max <- 0.9
 em_result <- em(t, t_max, volume_support, s_unif, s_X, n_generated)
 plot(t, em_result$EM_t)
+plot(t[1:em_result$amax], em_result$EM_t[1:em_result$amax])
