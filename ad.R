@@ -28,7 +28,7 @@ mv <- function(axis_alpha, volume_support, s_unif, s_X, n_generated){
   return(list(auc_mv = auc(axis_alpha, mv), mv = mv, threshold=threshold))
 }
 
-i <- 10
+i <- 991
 alpha <- axis_alpha[i]
 u <- mv_result$threshold[i]
 mass <- seq(0,1,length.out = length(s_X))
@@ -41,32 +41,30 @@ data.frame(mass, s_X, alpha, u) %>%
   ggplot2::geom_hline(ggplot2::aes(yintercept=u), linetype="dashed")
 
 
-y_tol <- diff(range(s_unif))/n_generated
-y_tol <- diff(range(s_X))/length(s_X)
-y_tol <- quantile(diff(sort(s_X)), 0.9)
-x_tol <- volume_support/n_generated
-xp <- unif[abs(s_unif - u) < y_tol]
-xp
-cut_points <- data.frame(xp) %>% 
+dif <- s_unif[order(unif)]-u
+xp_index <- which(diff(sign(dif)) != 0)
+xp_index <- c(1,xp_index,n_generated-1)
+xp_sign <- sign(dif)[xp_index]
+xp <- sort(unif)[xp_index]
+cut_points <- data.frame(xp, xp_sign) %>% 
   dplyr::arrange(xp) %>% 
   dplyr::mutate(xp_next = lead(xp),
-                xp_sep = xp_next-xp,
-                good = xp_sep > x_tol) %>% 
+                xp_sign_next = lead(xp_sign),
+                good = xp_sign*xp_sign_next == -1) %>% 
   dplyr::filter(good) %>% 
-  # then select only even rows
-  dplyr::select(xp, xp_next)
+  dplyr::slice(seq(1,n(),2)) %>%
+  dplyr::select(xp, xp_next) %>% 
+  dplyr::mutate(p = 1:n())
+cut_points
 
-# cut_points <- unif[abs(s_unif - u) < tol]
-# cut_points <- matrix(sort(cut_points), ncol=2, byrow = T) %>% 
-#   as.data.frame() %>%
-#   `colnames<-`(c("xp","xp_next"))
-data.frame(unif, s_unif, u, cut_points) %>% 
-  dplyr::mutate(f = s_unif >= u) %>% 
+data.frame(unif, s_unif, u) %>% 
+  merge(cut_points) %>% 
+  dplyr::mutate(f = unif >= xp & unif <= xp_next) %>% 
   ggplot2::ggplot()+
-  ggplot2::geom_area(data=. %>% filter(f), ggplot2::aes(x=unif, y=s_unif), fill="red")+
-  # ggplot2::geom_ribbon(data=. %>% filter(f), ggplot2::aes(x=unif, ymin=u, ymax=s_unif), fill="red")+
-  ggplot2::geom_line(ggplot2::aes(x=unif, y=s_unif), size=2)+
-  ggplot2::geom_hline(ggplot2::aes(yintercept=u), linetype="dashed")+
+  ggplot2::geom_area(data=. %>% dplyr::filter(f), ggplot2::aes(x=unif, y=s_unif, group=p), fill="red")+
+  # ggplot2::geom_ribbon(data=. %>% filter(f), ggplot2::aes(x=unif, ymin=u, ymax=s_unif), fill="red")
+  ggplot2::geom_line(data=. %>% dplyr::filter(p==1), ggplot2::aes(x=unif, y=s_unif), size=2)+
+  ggplot2::geom_hline(yintercept=u, linetype="dashed")+
   ggplot2::geom_segment(data=cut_points, ggplot2::aes(x=xp, y=-0.1, xend=xp_next, yend=-0.1),
                         arrow = ggplot2::arrow(length = grid::unit(10, 'pt'), type = "closed", angle=15, ends = "both"))
 
