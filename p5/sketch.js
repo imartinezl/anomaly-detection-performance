@@ -2,54 +2,45 @@
 
 
 
-let d, data;
-let n = 0, j = 0, jj = 1;
+let distributions, alpha = [];
+let j = 0, jj = 1;
 
 setup = () => {
-  createCanvas(600, 600);
+  createCanvas(1200, 600);
   background("#F6F6F6");
-  //colorMode(HSB);
+  
+  //generate alpha
+  let alpha_min = 0.9;
+  let alpha_max = 0.999;
+  let alpha_by = 0.001;
+  for (let a = alpha_min; a <= alpha_max; a += alpha_by) {
+    alpha.push(a);
+  }
 
   let n_x = 1000;
   let n_unif = 5000;
-  let pos = createVector(width / 2, height/2);
+  let pos = createVector(300, height-200);
   let scl = createVector(70, -700);
 
   let gen = { f: randomGaussian, p: [0, 1] };
   let pdf = { f: dnorm, p: [0, 1] };
-  let dA = new Distribution(n_x, n_unif, gen, pdf, pos, scl);
+  let dA = new Distribution(n_x, n_unif, gen, pdf, alpha, pos, scl);
 
   gen = { f: randomGaussian, p: [0, 1] };
   pdf = { f: dnorm, p: [0, 1.5] };
-  let dB = new Distribution(n_x, n_unif, gen, pdf, pos, scl);
+  let dB = new Distribution(n_x, n_unif, gen, pdf, alpha, pos, scl);
 
-  d = [dA];
-  data = new Array(d.length);
+  distributions = [dA, dB];
 
-  //generate alpha
-  let alpha_min = 0.0;
-  let alpha_max = 0.999;
-  let alpha_by = 0.01;
-  for (let alpha = alpha_min; alpha <= alpha_max; alpha += alpha_by) {
-    for (let i = 0; i < d.length; i++) {
-      if(!data[i]) data[i] = [];
-      data[i].push(d[i].update(alpha));
-    }
-    n++;
-  }
-  for (let i = 0; i < d.length; i++) {
-    d[i].display();
-  }
 }
 
 draw = () => {
   background("#F6F6F6");
-  for (let i = 0; i < d.length; i++) {
-    d[i].set_data(data[i][j]);
-    d[i].display();
+  for (let i = 0; i < distributions.length; i++) {
+    distributions[i].display(j);
   }
   j += jj;
-  if (j >= n - 1 | j < 0) {
+  if (j >= alpha.length - 1 | j < 0) {
     jj *= -1;
     j += jj;
   }
