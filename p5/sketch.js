@@ -8,6 +8,7 @@ class Distribution {
     this.scl = scl;
     this.generate_data();
     this.generate_uniform_data();
+    this.color = color(random(255),random(255),random(255),100);
 
   }
 
@@ -21,11 +22,10 @@ class Distribution {
 
   // generate data
   generate_data() {
-    this.x = [], this.fx = [], this.sx = [];
+    this.x = [], this.sx = [];
     for (let i = 0; i < this.nx; i++) {
       let value = randomGaussian(0, 1)
       this.x.push(value);
-      this.fx.push(pdf(value, 0, 1.5));
       this.sx.push(pdf(value, 0, 1));
     }
     this.id_x = this.order(this.x);
@@ -35,7 +35,7 @@ class Distribution {
   // generate uniform data
   generate_uniform_data() {
     this.unif = [], this.funif = [], this.sunif = [];
-    this.lim_y = Math.max(Math.max.apply(Math, this.fx), Math.max.apply(Math, this.sx));
+    this.lim_y = Math.max.apply(Math, this.sx);
     this.lim_inf = Math.min.apply(Math, this.x);
     this.lim_sup = Math.max.apply(Math, this.x);
     this.volume_support = this.lim_sup - this.lim_inf;
@@ -109,7 +109,7 @@ class Distribution {
     this.plot_axis();
     //this.plot_fx();
     this.plot_sx();
-    //this.plot_rug();
+    this.plot_rug();
     if(this.t) this.plot_threshold();
     if(this.cut_points) this.plot_cut_points();
   }
@@ -123,23 +123,11 @@ class Distribution {
     line(0, 0, 0, this.lim_y*this.scl.y);
   }
 
-  // plot true density
-  plot_fx() {
-    noFill();
-    strokeWeight(1);
-    stroke(255, 0, 0);
-    beginShape();
-    for (let i = 0; i < this.nx; i++) {
-      let pos = this.id_x[i]
-      vertex(this.x[pos]*this.scl.x, this.fx[pos]*this.scl.y);
-    }
-    endShape();
-  }
-
   // plot scoring function
   plot_sx() {
     noFill();
-    stroke(0, 255, 0);
+    strokeWeight(1.5);
+    stroke(this.color);
     beginShape();
     for (let i = 0; i < this.nx; i++) {
       let pos = this.id_x[i]
@@ -152,7 +140,7 @@ class Distribution {
   plot_rug() {
     noFill();
     strokeWeight(0.5);
-    stroke(0, 50);
+    stroke(this.color);
     for (let i = 0; i < this.nx; i++) {
       push();
       let pos = this.id_x[i]
@@ -166,7 +154,7 @@ class Distribution {
   // plot threshold line
   plot_threshold() {
     strokeWeight(1);
-    stroke(0);
+    stroke(this.color);
     noFill();
     line(this.lim_inf*this.scl.x, this.t*this.scl.y, this.lim_sup*this.scl.x, this.t*this.scl.y);
   }
@@ -175,7 +163,8 @@ class Distribution {
   plot_cut_points(){
     stroke(0);
     strokeWeight(0);
-    fill(255, 0, 0, 100);
+    //this.color.setAlpha(100);
+    fill(this.color);
     for (let i = 0; i < this.cut_points.length; i++) {
       let a = this.cut_points[i].a;
       let b = this.cut_points[i].b;
@@ -202,11 +191,12 @@ let j = 0, jj=1, data = [];
 setup = () => {
   createCanvas(600, 600);
   background("#F6F6F6");
+  //colorMode(HSB);
 
   let n_x = 1000;
   let n_unif = 10000;
-  let pos = createVector(width / 2, height / 2);
-  let scl = createVector(50, -500);
+  let pos = createVector(width / 2, height-100);
+  let scl = createVector(70, -700);
   d = new Distribution(n_x, n_unif, pos, scl);
 
   //generate alpha
