@@ -1,151 +1,216 @@
-var n_x = 1000;
-var x = [], f_x = [], s_x = [];
-var i_x, i_unif;
 
-var n_unif = 1000;
-var unif = [], f_unif = [], s_unif = [];
-var lim_inf, lim_sup, volume_support;
+class Distribution {
+
+  constructor(nx, nunif, pos, scl) {
+    this.nx = nx;
+    this.nunif = nunif;
+    this.pos = pos;
+    this.scl = scl;
+    this.generate_data();
+    this.generate_uniform_data();
+
+  }
+
+  // get ordered indexes
+  order(x) {
+    let id = new Array(x.length);
+    for (var i = 0; i < x.length; ++i) id[i] = i;
+    id.sort(function (a, b) { return x[a] < x[b] ? -1 : x[a] > x[b] ? 1 : 0; });
+    return id;
+  }
+
+  // generate data
+  generate_data() {
+    this.x = [], this.fx = [], this.sx = [];
+    for (let i = 0; i < this.nx; i++) {
+      let value = randomGaussian(0, 1)
+      this.x.push(value);
+      this.fx.push(pdf(value, 0, 1.5));
+      this.sx.push(pdf(value, 0, 1));
+    }
+    this.id_x = this.order(this.x);
+    this.id_sx = this.order(this.sx)
+  }
+
+  // generate uniform data
+  generate_uniform_data() {
+    this.unif = [], this.funif = [], this.sunif = [];
+    this.lim_y = Math.max(Math.max.apply(Math, this.fx), Math.max.apply(Math, this.sx));
+    this.lim_inf = Math.min.apply(Math, this.x);
+    this.lim_sup = Math.max.apply(Math, this.x);
+    this.volume_support = this.lim_sup - this.lim_inf;
+    for (let i = 0; i < this.n_unif; i++) {
+      let value = uniform(this.lim_inf, this.lim_sup)
+      this.unif.push(value);
+      this.funif.push(pdf(value, 0, 1.5));
+      this.sunif.push(pdf(value, 0, 1));
+    }
+    this.id_unif = this.order(this.unif);
+  }
+
+  get_threshold(alpha) {
+    let mass = 0;
+    let cont = 0;
+    let t = 0;
+    while (mass < alpha) {
+      cont++;
+      t = s_x[id_s_x[n_x - cont - 1]];
+      mass = cont / n_x;
+    }
+    return t;
+  }
+
+  get_cut_points(t) {
+
+    let sign_prev;
+    let cut_index = [0];
+    let cut_sign = [-1];
+    for (let i = 0; i < this.nunif; i++) {
+      let pos = this.id_unif[i];
+      let sign = Math.sign(this.sunif[pos] - t);
+      if (sign_prev && sign - sign_prev !== 0) {
+        cut_index.push(i - 1);
+        cut_sign.push(sign_prev);
+      }
+      sign_prev = sign;
+    }
+    cut_index.push(this.nunif - 2);
+    cut_sign.push(-1);
+    //console.log(cut_index, cut_sign);
+
+    let cut_points = [];
+    let cont = 0;
+    for (let i = 0; i < cut_index.length - 1; i++) {
+      let good = cut_sign[i] * cut_sign[i + 1] === -1;
+      if (good) {
+        if (cont % 2 === 0) {
+          cut_points.push({ a: cut_index[i], b: cut_index[i + 1] });
+        }
+        cont++;
+      }
+    }
+    return cut_points;
+  }
+
+  update(alpha) {
+    this.alpha = alpha;
+    this.t = this.get_threshold(this.alpha);
+    this.cut_points = this.get_cut_points(this.t);
+  }
+
+  display() {
+    //push();
+    translate(this.pos.x, this.pos.y);
+    this.plot_axis();
+    //this.plot_fx();
+    //pop()
+  }
+
+  // plot_axis
+  plot_axis() {
+    noFill();
+    strokeWeight(1/10);
+    stroke(0);
+    line(this.lim_inf*this.scl.x, 0, this.lim_sup*this.scl.x, 0);
+    line(0, 0, 0, this.lim_y*this.scl.y);
+  }
+
+  // plot true density
+  plot_fx() {
+    noFill();
+    stroke(255, 0, 0);
+    beginShape();
+    for (let i = 0; i < this.nx; i++) {
+      let pos = this.id_x[i]
+      vertex(this.x[pos], this.fx[pos]);
+    }
+    endShape();
+  }
+
+  // plot scoring function
+  plot_sx() {
+    noFill();
+    stroke(0, 255, 0);
+    beginShape();
+    for (let i = 0; i < this.nx; i++) {
+      let pos = this.id_x[i]
+      vertex(this.x[pos], this.sx[pos]);
+    }
+    endShape();
+  }
+
+  // plot rug on margin
+  plot_rug() {
+    noFill();
+    stroke(0, 50);
+    strokeWeight(0.5);
+    for (let i = 0; i < this.nx; i++) {
+      push();
+      let pos = this.id_x[i]
+      translate(this.x[pos], 1);
+      line(0, 0, 0, 1);
+      pop();
+    }
+
+  }
+
+  // plot threshold line
+  plot_threshold() {
+    line(this.lim_inf, this.t, this.lim_sup, this.t);
+  }
+
+  // plot cut points
+  plot_cut_points(){
+
+    strokeWeight(4);
+    fill(255, 0, 0, 100);
+    for (let i = 0; i < this.cut_points.length; i++) {
+      let a = this.cut_points[i].a;
+      let b = this.cut_points[i].b;
+      let xa = this.unif[this.id_unif[a]];
+      let xb = this.unif[this.id_unif[b]];
+      //line(xa*sx, t*sy, xb*sx, t*sy);
+      beginShape();
+      vertex(xa, 0);
+      for (let j = a; j <= b; j++) {
+        let xj = this.unif[this.id_unif[j]];
+        let yj = this.sunif[this.id_unif[j]];
+        vertex(xj, yj);
+      }
+      vertex(xb, 0);
+      endShape(CLOSE);
+    }
+  }
+}
+
+
+
+let d;
 
 setup = () => {
   createCanvas(600, 600);
   background("#F6F6F6");
 
-  // generate data
-  
-  for (let i = 0; i < n_x; i++) {
-    let value = randomGaussian(0,1)
-    x.push(value);
-    f_x.push(pdf(value, 0, 1.5));
-    s_x.push(pdf(value, 0, 1));
-  }
-
-  // get ordered indexes
-  id_x = new Array(n_x);
-  for (var i = 0; i < n_x; ++i) id_x[i] = i;
-  id_x.sort(function (a, b) { return x[a] < x[b] ? -1 : x[a] > x[b] ? 1 : 0; });
-
-  // generate uniform data
-  lim_y = Math.max(Math.max.apply(Math, f_x), Math.max.apply(Math, s_x));
-  lim_inf = Math.min.apply(Math, x);
-  lim_sup = Math.max.apply(Math, x);
-  volume_support = lim_sup - lim_inf;
-  for (let i = 0; i < n_unif; i++) {
-    let value = uniform(lim_inf, lim_sup)
-    unif.push(value);
-    f_unif.push(pdf(value, 0, 1.5));
-    s_unif.push(pdf(value, 0, 1));
-  }
+  let n_x = 1000;
+  let n_unif = 1000;
+  let pos = createVector(width / 2, height / 2);
+  let scl = createVector(50, -500);
+  d = new Distribution(n_x, n_unif, pos, scl);
 
   // generate alpha
-  let alpha_min = 0.0;
-  let alpha_max = 0.999;
-  let alpha_by = 0.001;
-  let alpha = [];
-  for (let a = alpha_min; a <= alpha_max; a+=alpha_by) {
-    alpha.push(a)
-  }
+  // let alpha_min = 0.0;
+  // let alpha_max = 0.999;
+  // let alpha_by = 0.001;
+  // let alpha = [];
+  // for (let a = alpha_min; a <= alpha_max; a+=alpha_by) {
+  //   alpha.push(a)
+  // }
+  let a = 0.98;
+  d.update();
+  d.display();
 
-  // plots
 
-  translate(width/2, height/2);
 
-  let sx = 50, sy=-500;
-
-  line(lim_inf*sx, 0, lim_sup*sx, 0);
-  line(0, 0, 0, lim_y*sy);
-
-  // plot true density
-  noFill();
-  stroke(255,0,0);
-  beginShape();
-  for (let i = 0; i < n_x; i++) {
-    let pos = id_x[i]
-    vertex(x[pos]*sx, f_x[pos]*sy);
-  }
-  endShape();
-
-  // plot scoring function
-  noFill();
-  stroke(0,255,0);
-  beginShape();
-  for (let i = 0; i < n_x; i++) {
-    let pos = id_x[i]
-    vertex(x[pos]*sx, s_x[pos]*sy);
-  }
-  endShape();
-
-  // plot rug on margin
-  noFill();
-  stroke(0, 50);
-  strokeWeight(0.5);
-  for (let i = 0; i < n_x; i++) {
-    push();
-    let pos = id_x[i]
-    translate(x[pos]*sx, 10);
-    line(0,0,0,10);
-    pop();
-  }
-
-  // calculate mass-volume
-  id_unif = new Array(n_unif);
-  for (var i = 0; i < n_unif; ++i) id_unif[i] = i;
-  id_unif.sort(function (a, b) { return unif[a] < unif[b] ? -1 : unif[a] > unif[b] ? 1 : 0; });
-
-  let t = 0.1;
-  line(lim_inf*sx,t*sy,lim_sup*sx,t*sy);
-  let dif = [], dif_sign = [];
-  for (let i = 0; i < n_unif; i++) {
-    let pos = id_unif[i];
-    dif.push(s_unif[pos]-t);
-    dif_sign.push(Math.sign(s_unif[pos]-t));
-  }
-  //console.log(dif, dif_sign);
-  let xp_index = [0];
-  let xp_sign = [dif_sign[0]];
-  for (let i = 0; i < n_unif-1; i++) {
-    let d = dif_sign[i+1]-dif_sign[i];
-    if(d !== 0){
-      //console.log(dif_sign[i], dif_sign[i+1]);
-      //console.log(i,id_unif[i],unif[id_unif[i]],s_unif[id_unif[i]])
-      xp_index.push(i);
-      xp_sign.push(dif_sign[i]);
-    }
-  }
-  xp_index.push(n_unif-1);
-  xp_sign.push(dif_sign[n_unif-2])
-  console.log(xp_index, xp_sign);
-  let cont = 0;
-  let cut_points = [];
-  for (let i = 0; i < xp_index.length-1; i++) {
-    let good = xp_sign[i+1]*xp_sign[i];
-    console.log(good, xp_index[i], xp_index[i+1], unif[id_unif[xp_index[i]]], unif[id_unif[xp_index[i+1]]]);
-    if(good === -1){
-      if(cont % 2 === 0){
-        cut_points.push({id_xp:xp_index[i],id_xp_next:xp_index[i+1]});
-      }
-      cont++;
-    }
-    
-  }
-  console.log(cut_points);
-  for (let i = 0; i < cut_points.length; i++) {
-    const e = cut_points[i];
-    console.log(e.id_xp, e.id_xp_next);
-    strokeWeight(4);
-    //line(unif[id_unif[e.id_xp]]*sx, t*sy, unif[id_unif[e.id_xp_next]]*sx, t*sy);
-    beginShape();
-    fill(255, 0, 0, 100);
-    //vertex(unif[id_unif[e.id_xp]]*sx,0*sy);
-    for(let j=e.id_xp; j <= e.id_xp_next; j++){
-      vertex(unif[id_unif[j]]*sx, s_unif[id_unif[j]]*sy);
-    }
-    //vertex(unif[id_unif[e.id_xp_next]]*sx,0*sy);
-    endShape(CLOSE);
-
-    
-  }
-
-  console.log();
 }
 
 // draw = () => {
@@ -157,9 +222,9 @@ setup = () => {
 // }
 
 
-pdf = function(x, mean, std) {
+pdf = function (x, mean, std) {
   var m = std * Math.sqrt(2 * Math.PI);
-  var e = Math.exp(-Math.pow(x - mean, 2) / (2 * pow(std,2)));
+  var e = Math.exp(-Math.pow(x - mean, 2) / (2 * pow(std, 2)));
   return e / m;
 };
 
@@ -169,18 +234,18 @@ uniform = (min, max) => {
 
 Array.prototype.sortIndices = function (func) {
   var i = j = this.length,
-      that = this;
+    that = this;
 
   while (i--) {
-      this[i] = { k: i, v: this[i] };
+    this[i] = { k: i, v: this[i] };
   }
 
   this.sort(function (a, b) {
-      return func ? func.call(that, a.v, b.v) : 
-                    a.v < b.v ? -1 : a.v > b.v ? 1 : 0;
+    return func ? func.call(that, a.v, b.v) :
+      a.v < b.v ? -1 : a.v > b.v ? 1 : 0;
   });
 
   while (j--) {
-      this[j] = this[j].k;
+    this[j] = this[j].k;
   }
 }
