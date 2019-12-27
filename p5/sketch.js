@@ -39,8 +39,8 @@ class Distribution {
     this.lim_inf = Math.min.apply(Math, this.x);
     this.lim_sup = Math.max.apply(Math, this.x);
     this.volume_support = this.lim_sup - this.lim_inf;
-    for (let i = 0; i < this.n_unif; i++) {
-      let value = uniform(this.lim_inf, this.lim_sup)
+    for (let i = 0; i < this.nunif; i++) {
+      let value = uniform(this.lim_inf, this.lim_sup);
       this.unif.push(value);
       this.funif.push(pdf(value, 0, 1.5));
       this.sunif.push(pdf(value, 0, 1));
@@ -54,8 +54,8 @@ class Distribution {
     let t = 0;
     while (mass < alpha) {
       cont++;
-      t = s_x[id_s_x[n_x - cont - 1]];
-      mass = cont / n_x;
+      t = this.sx[this.id_sx[this.nx - cont - 1]];
+      mass = cont / this.nx;
     }
     return t;
   }
@@ -93,23 +93,31 @@ class Distribution {
   }
 
   update(alpha) {
-    this.alpha = alpha;
-    this.t = this.get_threshold(this.alpha);
-    this.cut_points = this.get_cut_points(this.t);
+    let t = this.get_threshold(alpha);
+    let cut_points = this.get_cut_points(t);
+    return {alpha, t, cut_points};
+  }
+
+  set_data(data){
+    this.alpha = data.alpha;
+    this.t = data.t;
+    this.cut_points = data.cut_points;
   }
 
   display() {
-    //push();
     translate(this.pos.x, this.pos.y);
     this.plot_axis();
     //this.plot_fx();
-    //pop()
+    this.plot_sx();
+    //this.plot_rug();
+    if(this.t) this.plot_threshold();
+    if(this.cut_points) this.plot_cut_points();
   }
 
   // plot_axis
   plot_axis() {
     noFill();
-    strokeWeight(1/10);
+    strokeWeight(1);
     stroke(0);
     line(this.lim_inf*this.scl.x, 0, this.lim_sup*this.scl.x, 0);
     line(0, 0, 0, this.lim_y*this.scl.y);
@@ -118,11 +126,12 @@ class Distribution {
   // plot true density
   plot_fx() {
     noFill();
+    strokeWeight(1);
     stroke(255, 0, 0);
     beginShape();
     for (let i = 0; i < this.nx; i++) {
       let pos = this.id_x[i]
-      vertex(this.x[pos], this.fx[pos]);
+      vertex(this.x[pos]*this.scl.x, this.fx[pos]*this.scl.y);
     }
     endShape();
   }
@@ -134,7 +143,7 @@ class Distribution {
     beginShape();
     for (let i = 0; i < this.nx; i++) {
       let pos = this.id_x[i]
-      vertex(this.x[pos], this.sx[pos]);
+      vertex(this.x[pos]*this.scl.x, this.sx[pos]*this.scl.y);
     }
     endShape();
   }
@@ -142,13 +151,13 @@ class Distribution {
   // plot rug on margin
   plot_rug() {
     noFill();
-    stroke(0, 50);
     strokeWeight(0.5);
+    stroke(0, 50);
     for (let i = 0; i < this.nx; i++) {
       push();
       let pos = this.id_x[i]
-      translate(this.x[pos], 1);
-      line(0, 0, 0, 1);
+      translate(this.x[pos]*this.scl.x, 10);
+      line(0, 0, 0, 10);
       pop();
     }
 
@@ -156,28 +165,30 @@ class Distribution {
 
   // plot threshold line
   plot_threshold() {
-    line(this.lim_inf, this.t, this.lim_sup, this.t);
+    strokeWeight(1);
+    stroke(0);
+    noFill();
+    line(this.lim_inf*this.scl.x, this.t*this.scl.y, this.lim_sup*this.scl.x, this.t*this.scl.y);
   }
 
   // plot cut points
   plot_cut_points(){
-
-    strokeWeight(4);
+    stroke(0);
+    strokeWeight(0);
     fill(255, 0, 0, 100);
     for (let i = 0; i < this.cut_points.length; i++) {
       let a = this.cut_points[i].a;
       let b = this.cut_points[i].b;
       let xa = this.unif[this.id_unif[a]];
       let xb = this.unif[this.id_unif[b]];
-      //line(xa*sx, t*sy, xb*sx, t*sy);
       beginShape();
-      vertex(xa, 0);
+      vertex(xa*this.scl.x, 0);
       for (let j = a; j <= b; j++) {
         let xj = this.unif[this.id_unif[j]];
         let yj = this.sunif[this.id_unif[j]];
-        vertex(xj, yj);
+        vertex(xj*this.scl.x, yj*this.scl.y);
       }
-      vertex(xb, 0);
+      vertex(xb*this.scl.x, 0);
       endShape(CLOSE);
     }
   }
@@ -186,40 +197,39 @@ class Distribution {
 
 
 let d;
+let j = 0, jj=1, data = [];
 
 setup = () => {
   createCanvas(600, 600);
   background("#F6F6F6");
 
   let n_x = 1000;
-  let n_unif = 1000;
+  let n_unif = 10000;
   let pos = createVector(width / 2, height / 2);
   let scl = createVector(50, -500);
   d = new Distribution(n_x, n_unif, pos, scl);
 
-  // generate alpha
-  // let alpha_min = 0.0;
-  // let alpha_max = 0.999;
-  // let alpha_by = 0.001;
-  // let alpha = [];
-  // for (let a = alpha_min; a <= alpha_max; a+=alpha_by) {
-  //   alpha.push(a)
-  // }
-  let a = 0.98;
-  d.update();
+  //generate alpha
+  let alpha_min = 0.0;
+  let alpha_max = 0.999;
+  let alpha_by = 0.005;
+  for (let alpha = alpha_min; alpha <= alpha_max; alpha+=alpha_by) {
+    let tmp = d.update(alpha);
+    data.push(tmp);
+  }
   d.display();
-
-
-
 }
 
-// draw = () => {
-//   background("#F6F6F6");
-
-//   // for(v in x){
-//   //   console.log(v);
-//   // }
-// }
+draw = () => {
+  background("#F6F6F6");
+  d.set_data(data[j]);
+  d.display();
+  j+= jj;
+  if(j >= data.length-1 | j < 0){
+    jj *= -1;
+    j += jj;
+  }
+}
 
 
 pdf = function (x, mean, std) {
