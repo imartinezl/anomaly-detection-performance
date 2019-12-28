@@ -114,7 +114,11 @@ class Distribution {
     get_volume(cp){
         let v = 0;
         for (let k = 0; k < cp.length; k++) {
-            v += cp[k].b-cp[k].a;
+            let a = cp[k].a;
+            let ax = this.unif[this.id_unif[a]];
+            let b = cp[k].b;
+            let bx = this.unif[this.id_unif[b]];
+            v += bx-ax;
         }
         return v;
     }
@@ -127,7 +131,7 @@ class Distribution {
         this.plot_rug();
         if (this.threshold[j]) this.plot_threshold(j);
         if (this.cut_points[j]) this.plot_cut_points(j);
-        //if (this.volume[j]) this.plot_mass_volume(j);
+        if (this.volume[j]) this.plot_mass_volume(j);
         pop();
     }
 
@@ -202,28 +206,36 @@ class Distribution {
     }
 
     plot_mass_volume(j) {
-        translate(300, 0);
+        translate(0, 500);
         let scl_a = 300;
-        let scl_v = -0.04;
+        let scl_v = -25;
         noFill();
 
         strokeWeight(1);
         stroke(0);
         let origin = createVector(this.alpha[0],this.volume[0]);
         let end = createVector(this.alpha[this.n-1],this.volume[this.n-1])
-        line(origin.x*scl_a,origin.y*scl_v,end.x*scl_a,end.y*scl_v);
+        line(origin.x*scl_a,origin.y*scl_v,origin.x*scl_a,end.y*scl_v);
+        line(origin.x*scl_a,origin.y*scl_v,end.x*scl_a,origin.y*scl_v);
 
-        // strokeWeight(2);
-        // stroke(this.color);
-        // line(this.alpha[j]*scl_a,0,this.alpha[j]*scl_a,this.volume[j]*scl_v)
+        strokeWeight(2);
+        stroke(this.color);
+        line(this.alpha[j]*scl_a,0,this.alpha[j]*scl_a,this.volume[j]*scl_v);
+        line(0,this.volume[j]*scl_v,this.alpha[j]*scl_a,this.volume[j]*scl_v);
+        textAlign(CENTER, BOTTOM);
+        textSize(20);
+        stroke(0);
+        text(Math.round(this.alpha[j]*100)/100,this.alpha[j]*scl_a,0)
+        text(Math.round(this.volume[j]*100)/100,0,this.volume[j]*scl_v)
         
-        // beginShape();
-        // for (let j = 0; j < this.n; j++) {
-        //     let a = this.alpha[j];
-        //     let v = this.volume[j];
-        //     vertex(a*scl_a, v*scl_v);
-        // }
-        // endShape()
+        stroke(this.color);
+        beginShape();
+        for (let i = 0; i < this.n; i++) {
+            let a = this.alpha[i];
+            let v = this.volume[i];
+            vertex(a*scl_a, v*scl_v);
+        }
+        endShape()
 
 
     }
