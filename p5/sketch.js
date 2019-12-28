@@ -25,13 +25,15 @@ setup = () => {
   // TO-DO: create new generator to allow multiple modes
   let gen = { f: randomGaussian, p: [0, 1] };
   let pdf = { f: dnorm, p: [0, 1] };
+  gen = {f: custom_gen, p: []};
+  pdf = {f: custom_pdf, p: []};
   let dA = new Distribution(n_x, n_unif, gen, pdf, alpha, pos, scl);
 
-  gen = { f: randomGaussian, p: [0, 1] };
-  pdf = { f: dnorm, p: [0, 1.5] };
-  let dB = new Distribution(n_x, n_unif, gen, pdf, alpha, pos, scl);
+  // gen = { f: randomGaussian, p: [0, 1] };
+  // pdf = { f: dnorm, p: [0, 1.5] };
+  // let dB = new Distribution(n_x, n_unif, gen, pdf, alpha, pos, scl);
 
-  distributions = [dA, dB];
+  distributions = [dA];
 
 }
 
@@ -47,8 +49,20 @@ draw = () => {
   }
 }
 
+custom_gen = (seed) => {
+  let num;
+  if(random() > 0.5) num = randomGaussian(0,1);
+  else num = randomGaussian(5,1.5);
+  return num
+}
 
-dnorm = function (x, mean, std) {
+custom_pdf = (x) => {
+  let num = dnorm(x, 0, 1) + dnorm(x, 5, 1.5);
+  return num
+}
+
+
+dnorm = (x, mean, std) =>{
   var m = std * Math.sqrt(2 * Math.PI);
   var e = Math.exp(-Math.pow(x - mean, 2) / (2 * pow(std, 2)));
   return e / m;
