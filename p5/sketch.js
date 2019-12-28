@@ -12,16 +12,17 @@ setup = () => {
   //generate alpha
   let alpha_min = 0.9;
   let alpha_max = 0.999;
-  let alpha_by = 0.001;
+  let alpha_by = 0.005;
   for (let a = alpha_min; a <= alpha_max; a += alpha_by) {
     alpha.push(a);
   }
 
   let n_x = 1000;
-  let n_unif = 5000;
+  let n_unif = 10000;
   let pos = createVector(300, height-200);
   let scl = createVector(70, -700);
 
+  // TO-DO: create new generator to allow multiple modes
   let gen = { f: randomGaussian, p: [0, 1] };
   let pdf = { f: dnorm, p: [0, 1] };
   let dA = new Distribution(n_x, n_unif, gen, pdf, alpha, pos, scl);
