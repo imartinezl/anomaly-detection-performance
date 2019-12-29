@@ -21,10 +21,10 @@ generate_alpha = () => {
 generate_distributions = () => {
     let n_x = 1000;
     let n_unif = 10000;
-    let posA = createVector(300, 500);
+    let posA = createVector(300, 400);
     let sclA = createVector(70, -700);
-    let posB = createVector(600, 500);
-    let sclB = createVector(300, -70);
+    let posB = createVector(600, 400);
+    let sclB = createVector(300, -50);
 
     let gen = { f: randomGaussian, p: [0, 1] };
     let pdf = { f: dnorm, p: [0, 1] };
@@ -32,11 +32,15 @@ generate_distributions = () => {
     //pdf = { f: custom_pdf, p: [] };
     let dA = new Distribution(n_x, n_unif, gen, pdf, alpha, posA, sclA, posB, sclB);
 
-    // gen = { f: randomGaussian, p: [0, 1] };
-    // pdf = { f: dnorm, p: [0, 1.2] };
-    // let dB = new Distribution(n_x, n_unif, gen, pdf, alpha, pos, scl);
+    posA = createVector(300, 800);
+    sclA = createVector(70, -700);
+    posB = createVector(600, 800);
+    sclB = createVector(300, -50);
+    gen = { f: randomGaussian, p: [0, 1] };
+    pdf = { f: dnorm, p: [0, 1.2] };
+    let dB = new Distribution(n_x, n_unif, gen, pdf, alpha, posA, sclA, posB, sclB);
 
-    distributions = [dA];
+    distributions = [dA, dB];
 }
 
 update_distributions = () => {

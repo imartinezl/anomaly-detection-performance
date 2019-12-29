@@ -245,6 +245,7 @@ class Distribution {
         fill(0);
         noStroke();
         textSize(16);
+        textFont(fontRegular);
         textAlign(RIGHT, BOTTOM);
         text("Volume\n(x)", 0, last.y);
         textAlign(LEFT, TOP);
@@ -263,6 +264,7 @@ class Distribution {
         fill(0);
         noStroke();
         textSize(16);
+        textFont(fontRegular);
         textAlign(CENTER, TOP);
         text(alpha_value, point.x, 0)
         textAlign(RIGHT, BOTTOM);
