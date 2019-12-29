@@ -1,6 +1,9 @@
-class Distribution {
+import p5 from './p5.min.js';
 
-    constructor(nx, nunif, gen, pdf, alpha, posA, sclA, posB, sclB) {
+export default class Distribution {
+
+    constructor(p5, nx, nunif, gen, pdf, alpha, posA, sclA, posB, sclB) {
+        this.p5 = p5;
         this.nx = nx;
         this.nunif = nunif;
         this.gen = gen;
@@ -10,8 +13,8 @@ class Distribution {
         this.sclA = sclA;
         this.posB = posB;
         this.sclB = sclB;
-        colorMode(HSB, 255)
-        this.color = color(random(255), 255, 255, 100);
+        this.p5.colorMode(this.p5.HSB, 255);
+        this.color = this.p5.color(this.p5.random(255), 255, 255, 100);
         this.init();
     }
 
@@ -34,7 +37,7 @@ class Distribution {
 
     }
 
-    update(alpha){
+    update(alpha) {
         this.alpha = alpha;
         this.init();
     }
@@ -73,7 +76,7 @@ class Distribution {
     order(x) {
         let id = new Array(x.length);
         for (var i = 0; i < x.length; ++i) id[i] = i;
-        id.sort(function (a, b) { return x[a] < x[b] ? -1 : x[a] > x[b] ? 1 : 0; });
+        id.sort(function(a, b) { return x[a] < x[b] ? -1 : x[a] > x[b] ? 1 : 0; });
         return id;
     }
 
@@ -134,53 +137,53 @@ class Distribution {
     }
 
     display(j) {
-        push();
-        translate(this.posA.x, this.posA.y);
+        this.p5.push();
+        this.p5.translate(this.posA.x, this.posA.y);
         this.plot_axis();
         this.plot_sx();
         this.plot_rug();
         if (this.threshold[j]) this.plot_threshold(j);
         if (this.cut_points[j]) this.plot_cut_points(j);
-        pop();
-        push();
-        translate(this.posB.x, this.posB.y);
+        this.p5.pop();
+        this.p5.push();
+        this.p5.translate(this.posB.x, this.posB.y);
         if (this.volume[j]) this.plot_mass_volume(j);
-        pop();
+        this.p5.pop();
     }
 
     // plot_axis
     plot_axis() {
-        noFill();
-        strokeWeight(1);
-        stroke(0);
-        line(this.lim_inf * this.sclA.x, 0, this.lim_sup * this.sclA.x, 0);
-        line(0, 0, 0, this.lim_y * this.sclA.y);
+        this.p5.noFill();
+        this.p5.strokeWeight(1);
+        this.p5.stroke(0);
+        this.p5.line(this.lim_inf * this.sclA.x, 0, this.lim_sup * this.sclA.x, 0);
+        this.p5.line(0, 0, 0, this.lim_y * this.sclA.y);
     }
 
     // plot scoring function
     plot_sx() {
-        noFill();
-        strokeWeight(1.5);
-        stroke(this.color);
-        beginShape();
+        this.p5.noFill();
+        this.p5.strokeWeight(1.5);
+        this.p5.stroke(this.color);
+        this.p5.beginShape();
         for (let i = 0; i < this.nx; i++) {
             let pos = this.id_x[i]
-            vertex(this.x[pos] * this.sclA.x, this.sx[pos] * this.sclA.y);
+            this.p5.vertex(this.x[pos] * this.sclA.x, this.sx[pos] * this.sclA.y);
         }
-        endShape();
+        this.p5.endShape();
     }
 
     // plot rug on margin
     plot_rug() {
-        noFill();
-        strokeWeight(0.5);
-        stroke(this.color);
+        this.p5.noFill();
+        this.p5.strokeWeight(0.5);
+        this.p5.stroke(this.color);
         for (let i = 0; i < this.nx; i++) {
-            push();
+            this.p5.push();
             let pos = this.id_x[i]
-            translate(this.x[pos] * this.sclA.x, 10);
-            line(0, 0, 0, 10);
-            pop();
+            this.p5.translate(this.x[pos] * this.sclA.x, 10);
+            this.p5.line(0, 0, 0, 10);
+            this.p5.pop();
         }
 
     }
@@ -188,10 +191,10 @@ class Distribution {
     // plot threshold line
     plot_threshold(j) {
         let t = this.threshold[j];
-        strokeWeight(1);
-        stroke(this.color);
-        noFill();
-        line(this.lim_inf * this.sclA.x, t * this.sclA.y, this.lim_sup * this.sclA.x, t * this.sclA.y);
+        this.p5.strokeWeight(1);
+        this.p5.stroke(this.color);
+        this.p5.noFill();
+        this.p5.line(this.lim_inf * this.sclA.x, t * this.sclA.y, this.lim_sup * this.sclA.x, t * this.sclA.y);
     }
 
     // plot cut points
@@ -202,22 +205,22 @@ class Distribution {
             let b = cp[i].b;
             let xa = this.unif[this.id_unif[a]];
             let xb = this.unif[this.id_unif[b]];
-            
-            noStroke();
-            fill(this.color);
-            beginShape();
-            vertex(xa * this.sclA.x, 0);
+
+            this.p5.noStroke();
+            this.p5.fill(this.color);
+            this.p5.beginShape();
+            this.p5.vertex(xa * this.sclA.x, 0);
             for (let j = a; j <= b; j++) {
                 let xj = this.unif[this.id_unif[j]];
                 let yj = this.sunif[this.id_unif[j]];
-                vertex(xj * this.sclA.x, yj * this.sclA.y);
+                this.p5.vertex(xj * this.sclA.x, yj * this.sclA.y);
             }
-            vertex(xb * this.sclA.x, 0);
-            endShape(CLOSE);
-            
-            fill(0);
-            circle(xa * this.sclA.x, this.threshold[j]*this.sclA.y,4);
-            circle(xb * this.sclA.x, this.threshold[j]*this.sclA.y,4);
+            this.p5.vertex(xb * this.sclA.x, 0);
+            this.p5.endShape(this.p5.CLOSE);
+
+            this.p5.fill(0);
+            this.p5.circle(xa * this.sclA.x, this.threshold[j] * this.sclA.y, 4);
+            this.p5.circle(xb * this.sclA.x, this.threshold[j] * this.sclA.y, 4);
         }
     }
 
@@ -235,50 +238,50 @@ class Distribution {
         let volume_max = tmp_volume[this.n - 1];
         let volume_j = tmp_volume[j];
 
-        let origin = createVector(alpha_min, volume_min);
-        let last = createVector(alpha_max, volume_max).sub(origin);
-        noFill();
-        strokeWeight(1);
-        stroke(0);
-        line(0, 0, last.x, 0);
-        line(0, 0, 0, last.y);
-        fill(0);
-        noStroke();
-        textSize(16);
-        textFont(fontRegular);
-        textAlign(RIGHT, BOTTOM);
-        text("Volume\n(x)", 0, last.y);
-        textAlign(LEFT, TOP);
-        text("Mass (area)", last.x, 0);
+        let origin = this.p5.createVector(alpha_min, volume_min);
+        let last = this.p5.createVector(alpha_max, volume_max).sub(origin);
+        this.p5.noFill();
+        this.p5.strokeWeight(1);
+        this.p5.stroke(0);
+        this.p5.line(0, 0, last.x, 0);
+        this.p5.line(0, 0, 0, last.y);
+        this.p5.fill(0);
+        this.p5.noStroke();
+        this.p5.textSize(16);
+        //this.p5.textFont(fontRegular);
+        this.p5.textAlign(RIGHT, BOTTOM);
+        this.p5.text("Volume\n(x)", 0, last.y);
+        this.p5.textAlign(LEFT, TOP);
+        this.p5.text("Mass (area)", last.x, 0);
 
         let point = createVector(alpha_j, volume_j).sub(origin);
-        noFill();
-        strokeWeight(2);
-        stroke(this.color);
-        line(point.x, 0, point.x, point.y)
-        line(0, point.y, point.x, point.y)
-        circle(point.x, point.y, 3)
+        this.p5.noFill();
+        this.p5.strokeWeight(2);
+        this.p5.stroke(this.color);
+        this.p5.line(point.x, 0, point.x, point.y)
+        this.p5.line(0, point.y, point.x, point.y)
+        this.p5.circle(point.x, point.y, 3)
 
         let alpha_value = Math.round(this.alpha[j] * 100) / 100;
         let volume_value = Math.round(this.volume[j] * 100) / 100;
-        fill(0);
-        noStroke();
-        textSize(16);
-        textFont(fontRegular);
-        textAlign(CENTER, TOP);
-        text(alpha_value, point.x, 0)
-        textAlign(RIGHT, BOTTOM);
-        text(volume_value, 0, point.y)
+        this.p5.fill(0);
+        this.p5.noStroke();
+        this.p5.textSize(16);
+        //this.p5.textFont(fontRegular);
+        this.p5.textAlign(CENTER, TOP);
+        this.p5.text(alpha_value, point.x, 0)
+        this.p5.textAlign(RIGHT, BOTTOM);
+        this.p5.text(volume_value, 0, point.y)
 
-        noFill();
-        strokeWeight(4);
-        stroke(this.color);
-        beginShape();
+        this.p5.noFill();
+        this.p5.strokeWeight(4);
+        this.p5.stroke(this.color);
+        this.p5.beginShape();
         for (let i = 0; i < this.n; i++) {
-            let pi = createVector(tmp_alpha[i], tmp_volume[i]).sub(origin);
-            vertex(pi.x, pi.y);
+            let pi = this.p5.createVector(tmp_alpha[i], tmp_volume[i]).sub(origin);
+            this.p5.vertex(pi.x, pi.y);
         }
-        endShape()
+        this.p5.endShape()
 
 
     }
