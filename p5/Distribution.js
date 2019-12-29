@@ -209,31 +209,56 @@ class Distribution {
         translate(0, 500);
         let scl_a = 300;
         let scl_v = -25;
-        noFill();
+        let tmp_alpha = this.alpha.map(e => e*scl_a);
+        let tmp_volume = this.volume.map(e => e*scl_v);
 
+        let alpha_min = tmp_alpha[0];
+        let alpha_max = tmp_alpha[this.n-1];
+        let alpha_j = tmp_alpha[j];
+        let volume_min = tmp_volume[0];
+        let volume_max = tmp_volume[this.n-1];
+        let volume_j = tmp_volume[j];
+
+        let origin = createVector(alpha_min, volume_min);
+        let last = createVector(alpha_max,volume_max).sub(origin);
+        noFill();
         strokeWeight(1);
         stroke(0);
-        let origin = createVector(this.alpha[0],this.volume[0]);
-        let end = createVector(this.alpha[this.n-1],this.volume[this.n-1])
-        line(origin.x*scl_a,origin.y*scl_v,origin.x*scl_a,end.y*scl_v);
-        line(origin.x*scl_a,origin.y*scl_v,end.x*scl_a,origin.y*scl_v);
+        line(0,0,last.x,0);
+        line(0,0,0,last.y);
+        fill(0);
+        noStroke();
+        textSize(16);
+        textAlign(RIGHT, BOTTOM);
+        text("Volume",0,last.y);
+        textAlign(LEFT, TOP);
+        text("Mass",last.x,0);
 
+        let point = createVector(alpha_j,volume_j).sub(origin);
+        noFill();
         strokeWeight(2);
         stroke(this.color);
-        line(this.alpha[j]*scl_a,0,this.alpha[j]*scl_a,this.volume[j]*scl_v);
-        line(0,this.volume[j]*scl_v,this.alpha[j]*scl_a,this.volume[j]*scl_v);
-        textAlign(CENTER, BOTTOM);
-        textSize(20);
-        stroke(0);
-        text(Math.round(this.alpha[j]*100)/100,this.alpha[j]*scl_a,0)
-        text(Math.round(this.volume[j]*100)/100,0,this.volume[j]*scl_v)
+        line(point.x,0,point.x,point.y)
+        line(0,point.y,point.x,point.y)
+        circle(point.x, point.y, 3)
         
+        let alpha_value = Math.round(this.alpha[j]*100)/100;
+        let volume_value = Math.round(this.volume[j]*100)/100;
+        fill(0);
+        noStroke();
+        textSize(16);
+        textAlign(CENTER, TOP);
+        text(alpha_value,point.x,0)
+        textAlign(RIGHT, BOTTOM);
+        text(volume_value,0,point.y)
+        
+        noFill();
+        strokeWeight(4);
         stroke(this.color);
         beginShape();
         for (let i = 0; i < this.n; i++) {
-            let a = this.alpha[i];
-            let v = this.volume[i];
-            vertex(a*scl_a, v*scl_v);
+            let pi = createVector(tmp_alpha[i], tmp_volume[i]).sub(origin);
+            vertex(pi.x,pi.y);
         }
         endShape()
 
