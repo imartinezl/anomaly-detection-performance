@@ -1,13 +1,15 @@
 class Distribution {
 
-    constructor(nx, nunif, gen, pdf, alpha, pos, scl) {
+    constructor(nx, nunif, gen, pdf, alpha, posA, sclA, posB, sclB) {
         this.nx = nx;
         this.nunif = nunif;
         this.gen = gen;
         this.pdf = pdf;
         this.alpha = alpha;
-        this.pos = pos;
-        this.scl = scl;
+        this.posA = posA;
+        this.sclA = sclA;
+        this.posB = posB;
+        this.sclB = sclB;
         colorMode(HSB, 255)
         this.color = color(random(255), 255, 255, 100);
         this.init();
@@ -30,6 +32,11 @@ class Distribution {
             this.volume.push(v)
         }
 
+    }
+
+    update(alpha){
+        this.alpha = alpha;
+        this.init();
     }
 
     // generate data
@@ -128,12 +135,15 @@ class Distribution {
 
     display(j) {
         push();
-        translate(this.pos.x, this.pos.y);
+        translate(this.posA.x, this.posA.y);
         this.plot_axis();
         this.plot_sx();
         this.plot_rug();
         if (this.threshold[j]) this.plot_threshold(j);
         if (this.cut_points[j]) this.plot_cut_points(j);
+        pop();
+        push();
+        translate(this.posB.x, this.posB.y);
         if (this.volume[j]) this.plot_mass_volume(j);
         pop();
     }
@@ -143,8 +153,8 @@ class Distribution {
         noFill();
         strokeWeight(1);
         stroke(0);
-        line(this.lim_inf * this.scl.x, 0, this.lim_sup * this.scl.x, 0);
-        line(0, 0, 0, this.lim_y * this.scl.y);
+        line(this.lim_inf * this.sclA.x, 0, this.lim_sup * this.sclA.x, 0);
+        line(0, 0, 0, this.lim_y * this.sclA.y);
     }
 
     // plot scoring function
@@ -155,7 +165,7 @@ class Distribution {
         beginShape();
         for (let i = 0; i < this.nx; i++) {
             let pos = this.id_x[i]
-            vertex(this.x[pos] * this.scl.x, this.sx[pos] * this.scl.y);
+            vertex(this.x[pos] * this.sclA.x, this.sx[pos] * this.sclA.y);
         }
         endShape();
     }
@@ -168,7 +178,7 @@ class Distribution {
         for (let i = 0; i < this.nx; i++) {
             push();
             let pos = this.id_x[i]
-            translate(this.x[pos] * this.scl.x, 10);
+            translate(this.x[pos] * this.sclA.x, 10);
             line(0, 0, 0, 10);
             pop();
         }
@@ -181,37 +191,42 @@ class Distribution {
         strokeWeight(1);
         stroke(this.color);
         noFill();
-        line(this.lim_inf * this.scl.x, t * this.scl.y, this.lim_sup * this.scl.x, t * this.scl.y);
+        line(this.lim_inf * this.sclA.x, t * this.sclA.y, this.lim_sup * this.sclA.x, t * this.sclA.y);
     }
 
     // plot cut points
     plot_cut_points(j) {
-        stroke(0);
-        strokeWeight(0);
-        //this.color.setAlpha(100);
-        fill(this.color);
         let cp = this.cut_points[j]
         for (let i = 0; i < cp.length; i++) {
             let a = cp[i].a;
             let b = cp[i].b;
             let xa = this.unif[this.id_unif[a]];
             let xb = this.unif[this.id_unif[b]];
+            
+            noStroke();
+            fill(this.color);
             beginShape();
-            vertex(xa * this.scl.x, 0);
+            vertex(xa * this.sclA.x, 0);
             for (let j = a; j <= b; j++) {
                 let xj = this.unif[this.id_unif[j]];
                 let yj = this.sunif[this.id_unif[j]];
-                vertex(xj * this.scl.x, yj * this.scl.y);
+                vertex(xj * this.sclA.x, yj * this.sclA.y);
             }
-            vertex(xb * this.scl.x, 0);
+            vertex(xb * this.sclA.x, 0);
             endShape(CLOSE);
+            
+            fill(0);
+            circle(xa * this.sclA.x, this.threshold[j]*this.sclA.y,4);
+            circle(xb * this.sclA.x, this.threshold[j]*this.sclA.y,4);
         }
     }
 
     plot_mass_volume(j) {
-        translate(0, 500);
-        let scl_a = 300/(this.alpha[this.n-1]-this.alpha[0]);
-        let scl_v = -300/(this.volume[this.n-1]-this.volume[0]);
+
+        // let scl_a = 300/(this.alpha[this.n-1]-this.alpha[0]);
+        // let scl_v = -30//(this.volume[this.n-1]-this.volume[0]);
+        scl_a = this.sclB.x;
+        scl_v = this.sclB.y;
         let tmp_alpha = this.alpha.map(e => e * scl_a);
         let tmp_volume = this.volume.map(e => e * scl_v);
 
@@ -233,9 +248,9 @@ class Distribution {
         noStroke();
         textSize(16);
         textAlign(RIGHT, BOTTOM);
-        text("Volume", 0, last.y);
+        text("Volume\n(x)", 0, last.y);
         textAlign(LEFT, TOP);
-        text("Mass", last.x, 0);
+        text("Mass (area)", last.x, 0);
 
         let point = createVector(alpha_j, volume_j).sub(origin);
         noFill();
