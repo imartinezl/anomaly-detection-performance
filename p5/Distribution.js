@@ -21,7 +21,7 @@ class Distribution {
         this.threshold = [];
         this.cut_points = [];
         this.volume = [];
-        for (let j=0; j < this.n; j++) {
+        for (let j = 0; j < this.n; j++) {
             let t = this.get_threshold(this.alpha[j]);
             let cp = this.get_cut_points(t);
             let v = this.get_volume(cp);
@@ -52,11 +52,14 @@ class Distribution {
         this.lim_sup = Math.max.apply(Math, this.x);
         this.volume_support = this.lim_sup - this.lim_inf;
         for (let i = 0; i < this.nunif; i++) {
-            let value = runif(this.lim_inf, this.lim_sup);
+            let value = this.runif(this.lim_inf, this.lim_sup);
             this.unif.push(value);
             this.sunif.push(this.pdf.f(value, ...this.pdf.p));
         }
         this.id_unif = this.order(this.unif);
+    }
+    runif = (min, max) => {
+        return Math.random() * (max - min) + min;
     }
 
     // get ordered indexes
@@ -111,14 +114,14 @@ class Distribution {
         return cut_points;
     }
 
-    get_volume(cp){
+    get_volume(cp) {
         let v = 0;
         for (let k = 0; k < cp.length; k++) {
             let a = cp[k].a;
             let ax = this.unif[this.id_unif[a]];
             let b = cp[k].b;
             let bx = this.unif[this.id_unif[b]];
-            v += bx-ax;
+            v += bx - ax;
         }
         return v;
     }
@@ -209,56 +212,56 @@ class Distribution {
         translate(0, 500);
         let scl_a = 300;
         let scl_v = -25;
-        let tmp_alpha = this.alpha.map(e => e*scl_a);
-        let tmp_volume = this.volume.map(e => e*scl_v);
+        let tmp_alpha = this.alpha.map(e => e * scl_a);
+        let tmp_volume = this.volume.map(e => e * scl_v);
 
         let alpha_min = tmp_alpha[0];
-        let alpha_max = tmp_alpha[this.n-1];
+        let alpha_max = tmp_alpha[this.n - 1];
         let alpha_j = tmp_alpha[j];
         let volume_min = tmp_volume[0];
-        let volume_max = tmp_volume[this.n-1];
+        let volume_max = tmp_volume[this.n - 1];
         let volume_j = tmp_volume[j];
 
         let origin = createVector(alpha_min, volume_min);
-        let last = createVector(alpha_max,volume_max).sub(origin);
+        let last = createVector(alpha_max, volume_max).sub(origin);
         noFill();
         strokeWeight(1);
         stroke(0);
-        line(0,0,last.x,0);
-        line(0,0,0,last.y);
+        line(0, 0, last.x, 0);
+        line(0, 0, 0, last.y);
         fill(0);
         noStroke();
         textSize(16);
         textAlign(RIGHT, BOTTOM);
-        text("Volume",0,last.y);
+        text("Volume", 0, last.y);
         textAlign(LEFT, TOP);
-        text("Mass",last.x,0);
+        text("Mass", last.x, 0);
 
-        let point = createVector(alpha_j,volume_j).sub(origin);
+        let point = createVector(alpha_j, volume_j).sub(origin);
         noFill();
         strokeWeight(2);
         stroke(this.color);
-        line(point.x,0,point.x,point.y)
-        line(0,point.y,point.x,point.y)
+        line(point.x, 0, point.x, point.y)
+        line(0, point.y, point.x, point.y)
         circle(point.x, point.y, 3)
-        
-        let alpha_value = Math.round(this.alpha[j]*100)/100;
-        let volume_value = Math.round(this.volume[j]*100)/100;
+
+        let alpha_value = Math.round(this.alpha[j] * 100) / 100;
+        let volume_value = Math.round(this.volume[j] * 100) / 100;
         fill(0);
         noStroke();
         textSize(16);
         textAlign(CENTER, TOP);
-        text(alpha_value,point.x,0)
+        text(alpha_value, point.x, 0)
         textAlign(RIGHT, BOTTOM);
-        text(volume_value,0,point.y)
-        
+        text(volume_value, 0, point.y)
+
         noFill();
         strokeWeight(4);
         stroke(this.color);
         beginShape();
         for (let i = 0; i < this.n; i++) {
             let pi = createVector(tmp_alpha[i], tmp_volume[i]).sub(origin);
-            vertex(pi.x,pi.y);
+            vertex(pi.x, pi.y);
         }
         endShape()
 
