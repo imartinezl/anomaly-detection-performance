@@ -210,8 +210,8 @@ class Distribution {
 
     plot_mass_volume(j) {
         translate(0, 500);
-        let scl_a = 300;
-        let scl_v = -25;
+        let scl_a = 300/(this.alpha[this.n-1]-this.alpha[0]);
+        let scl_v = -300/(this.volume[this.n-1]-this.volume[0]);
         let tmp_alpha = this.alpha.map(e => e * scl_a);
         let tmp_volume = this.volume.map(e => e * scl_v);
 
