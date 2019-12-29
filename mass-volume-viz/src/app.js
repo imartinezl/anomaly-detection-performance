@@ -1,7 +1,8 @@
 "use strict";
 
 import './style.css';
-import Sketch from './sketch.js';
+import p5 from './p5.min.js';
+import sketch from './sketch.js';
 
 
 //import './setup.js';
@@ -11,7 +12,7 @@ import Sketch from './sketch.js';
 export default class App {
 
     constructor() {
-        new Sketch();
+        new p5(sketch);
     }
 
     init() {
