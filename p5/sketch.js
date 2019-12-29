@@ -1,16 +1,10 @@
 
-
-
-
 let distributions, alpha = [];
 let j = 0, jj = 1;
 
-setup = () => {
-  createCanvas(1000, 1000);
-  background("#F6F6F6");
-  
+load_setup = () => {
   //generate alpha
-  let alpha_min = 0.0;
+  let alpha_min = 0.6;
   let alpha_max = 0.999;
   let alpha_by = 0.005;
   for (let a = alpha_min; a <= alpha_max; a += alpha_by) {
@@ -22,7 +16,6 @@ setup = () => {
   let pos = createVector(300, 400);
   let scl = createVector(70, -700);
 
-  // TO-DO: create new generator to allow multiple modes
   let gen = { f: randomGaussian, p: [0, 1] };
   let pdf = { f: dnorm, p: [0, 1] };
   gen = {f: custom_gen, p: []};
@@ -35,6 +28,13 @@ setup = () => {
 
   distributions = [dA];
 
+}
+
+setup = () => {
+  createCanvas(1000, 1000);
+  background("#F6F6F6");
+  load_setup();
+  
 }
 
 draw = () => {
@@ -68,24 +68,5 @@ dnorm = (x, mean, std) =>{
   return e / m;
 };
 
-runif = (min, max) => {
-  return Math.random() * (max - min) + min;
-}
 
-Array.prototype.sortIndices = function (func) {
-  var i = j = this.length,
-    that = this;
 
-  while (i--) {
-    this[i] = { k: i, v: this[i] };
-  }
-
-  this.sort(function (a, b) {
-    return func ? func.call(that, a.v, b.v) :
-      a.v < b.v ? -1 : a.v > b.v ? 1 : 0;
-  });
-
-  while (j--) {
-    this[j] = this[j].k;
-  }
-}
