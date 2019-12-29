@@ -225,10 +225,8 @@ class Distribution {
 
         // let scl_a = 300/(this.alpha[this.n-1]-this.alpha[0]);
         // let scl_v = -30//(this.volume[this.n-1]-this.volume[0]);
-        scl_a = this.sclB.x;
-        scl_v = this.sclB.y;
-        let tmp_alpha = this.alpha.map(e => e * scl_a);
-        let tmp_volume = this.volume.map(e => e * scl_v);
+        let tmp_alpha = this.alpha.map(e => e * this.sclB.x);
+        let tmp_volume = this.volume.map(e => e * this.sclB.y);
 
         let alpha_min = tmp_alpha[0];
         let alpha_max = tmp_alpha[this.n - 1];
