@@ -19,6 +19,7 @@ export default class Distribution {
     }
 
     init() {
+        this.preload();
         this.generate_data();
         this.generate_uniform_data();
 
@@ -35,6 +36,12 @@ export default class Distribution {
             this.volume.push(v)
         }
 
+    }
+
+    preload = () => {
+        this.fontRegular = this.p5.loadFont('./assets/Kulim_Park/KulimPark-Regular.ttf');
+        // fontSemiBold = loadFont('assets/Kulim_Park/KulimPark-SemiBold.ttf');
+        // fontBold = loadFont('assets/Kulim_Park/KulimPark-Bold.ttf');
     }
 
     update(alpha) {
@@ -73,14 +80,14 @@ export default class Distribution {
     }
 
     // get ordered indexes
-    order(x) {
+    order = (x) => {
         let id = new Array(x.length);
         for (var i = 0; i < x.length; ++i) id[i] = i;
         id.sort(function(a, b) { return x[a] < x[b] ? -1 : x[a] > x[b] ? 1 : 0; });
         return id;
     }
 
-    get_threshold(alpha) {
+    get_threshold = (alpha) => {
         let mass = 0;
         let cont = 0;
         let t = 0;
@@ -92,7 +99,7 @@ export default class Distribution {
         return t;
     }
 
-    get_cut_points(t) {
+    get_cut_points = (t) => {
 
         let sign_prev;
         let cut_index = [0];
@@ -124,7 +131,7 @@ export default class Distribution {
         return cut_points;
     }
 
-    get_volume(cp) {
+    get_volume = (cp) => {
         let v = 0;
         for (let k = 0; k < cp.length; k++) {
             let a = cp[k].a;
@@ -136,7 +143,7 @@ export default class Distribution {
         return v;
     }
 
-    display(j) {
+    display = (j) => {
         this.p5.push();
         this.p5.translate(this.posA.x, this.posA.y);
         this.plot_axis();
@@ -248,13 +255,13 @@ export default class Distribution {
         this.p5.fill(0);
         this.p5.noStroke();
         this.p5.textSize(16);
-        //this.p5.textFont(fontRegular);
-        this.p5.textAlign(RIGHT, BOTTOM);
+        this.p5.textFont(this.fontRegular);
+        this.p5.textAlign(this.p5.RIGHT, this.p5.BOTTOM);
         this.p5.text("Volume\n(x)", 0, last.y);
-        this.p5.textAlign(LEFT, TOP);
+        this.p5.textAlign(this.p5.LEFT, this.p5.TOP);
         this.p5.text("Mass (area)", last.x, 0);
 
-        let point = createVector(alpha_j, volume_j).sub(origin);
+        let point = this.p5.createVector(alpha_j, volume_j).sub(origin);
         this.p5.noFill();
         this.p5.strokeWeight(2);
         this.p5.stroke(this.color);
@@ -268,9 +275,9 @@ export default class Distribution {
         this.p5.noStroke();
         this.p5.textSize(16);
         //this.p5.textFont(fontRegular);
-        this.p5.textAlign(CENTER, TOP);
+        this.p5.textAlign(this.p5.CENTER, this.p5.TOP);
         this.p5.text(alpha_value, point.x, 0)
-        this.p5.textAlign(RIGHT, BOTTOM);
+        this.p5.textAlign(this.p5.RIGHT, this.p5.BOTTOM);
         this.p5.text(volume_value, 0, point.y)
 
         this.p5.noFill();

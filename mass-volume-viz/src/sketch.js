@@ -1,7 +1,6 @@
 import './setup.js';
 import Distribution from './distribution.js';
 
-let fontRegular, fontSemiBold, fontBold;
 let sketch = (p5) => {
 
     var j, jj, alpha, distributions;
@@ -14,14 +13,12 @@ let sketch = (p5) => {
         console.log('init');
     }
 
-
-    p5.preload = () => {
-        fontRegular = p5.loadFont('./assets/Kulim_Park/KulimPark-Regular.ttf');
-        // fontSemiBold = loadFont('assets/Kulim_Park/KulimPark-SemiBold.ttf');
-        // fontBold = loadFont('assets/Kulim_Park/KulimPark-Bold.ttf');
+    let update = () => {
+        j = 0;
+        jj = 1;
+        alpha = generate_alpha();
+        update_distributions(alpha);
     }
-
-
 
     p5.setup = () => {
         var canvas = p5.createCanvas(1000, 1000);
@@ -81,6 +78,12 @@ let sketch = (p5) => {
         // distributions = [dA, dB];
         return [dA];
         // return distributions;
+    }
+
+    let update_distributions = (alpha) => {
+        for (let i = 0; i < distributions.length; i++) {
+            distributions[i].update(alpha);
+        }
     }
 }
 
