@@ -63,20 +63,20 @@ let sketch = (p5) => {
 
         let gen = { f: generateGaussian, p: [0, 1] };
         let pdf = { f: dnorm, p: [0, 1] };
-        //gen = { f: custom_gen, p: [] };
-        //pdf = { f: custom_pdf, p: [] };
+        // gen = { f: custom_gen, p: [] };
+        // pdf = { f: custom_pdf, p: [] };
         let dA = new Distribution(p5, n_x, n_unif, gen, pdf, alpha, posA, sclA, posB, sclB);
 
-        // posA = createVector(300, 800);
-        // sclA = createVector(70, -700);
-        // posB = createVector(600, 800);
-        // sclB = createVector(300, -50);
-        // gen = { f: randomGaussian, p: [0, 1] };
-        // pdf = { f: dnorm, p: [0, 1.2] };
-        // let dB = new Distribution(n_x, n_unif, gen, pdf, alpha, posA, sclA, posB, sclB);
+        posA = p5.createVector(300, 800);
+        sclA = p5.createVector(70, -700);
+        posB = p5.createVector(600, 800);
+        sclB = p5.createVector(300, -50);
+        gen = { f: generateGaussian, p: [0, 1] };
+        pdf = { f: dnorm, p: [0, 1.2] };
+        let dB = new Distribution(p5, n_x, n_unif, gen, pdf, alpha, posA, sclA, posB, sclB);
 
         // distributions = [dA, dB];
-        return [dA];
+        return [dA, dB];
         // return distributions;
     }
 
