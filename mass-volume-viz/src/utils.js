@@ -1,12 +1,3 @@
-// let distributions, alpha;
-
-// let alpha_min_slider;
-// init_slider = () => {
-//     alpha_min_slider = createSlider(0, 1, 0, 0.001);
-//     alpha_min_slider.position(10, 100);
-//     alpha_min_slider.input(update);
-// }
-
 custom_gen = (seed) => {
     let num;
     if (Math.random() > 0.5) num = p5.randomGaussian(0, 1);
