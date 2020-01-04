@@ -1,13 +1,16 @@
-import './setup.js';
+import './utils.js';
 import Distribution from './distribution.js';
+
 
 let sketch = (p5) => {
 
     var j, jj, alpha, distributions;
+    var alpha_min_slider;
 
     let init = () => {
         j = 0;
         jj = 1;
+        init_slider();
         alpha = generate_alpha();
         distributions = generate_distributions(alpha);
         console.log('init');
@@ -18,6 +21,13 @@ let sketch = (p5) => {
         jj = 1;
         alpha = generate_alpha();
         update_distributions(alpha);
+    }
+
+    let init_slider = () => {
+        // alpha_min_slider = p5.createSlider(0, 1, 0, 0.001);
+        // alpha_min_slider.position(10, 100);
+        alpha_min_slider = document.getElementById('alpha-min-slider');
+        alpha_min_slider.addEventListener('change', update);
     }
 
     p5.setup = () => {
@@ -42,7 +52,7 @@ let sketch = (p5) => {
 
     let generate_alpha = () => {
         //generate alpha
-        let alpha_min = 0; //alpha_min_slider.value();
+        let alpha_min = parseFloat(alpha_min_slider.value);
         let alpha_max = 0.99;
         let alpha_by = 0.005;
         let alpha = [];
@@ -75,9 +85,7 @@ let sketch = (p5) => {
         pdf = { f: dnorm, p: [0, 1.2] };
         let dB = new Distribution(p5, n_x, n_unif, gen, pdf, alpha, posA, sclA, posB, sclB);
 
-        // distributions = [dA, dB];
         return [dA, dB];
-        // return distributions;
     }
 
     let update_distributions = (alpha) => {
@@ -88,42 +96,3 @@ let sketch = (p5) => {
 }
 
 export default sketch;
-
-
-
-// let env, j = 0,
-//     jj = 1;
-// let fontRegular, fontSemiBold, fontBold;
-
-// init = () => {
-//   init_slider();
-//   generate_alpha();
-//   generate_distributions();
-// }
-
-// update = () => {
-//   j = 0;
-//   jj = 1;
-//   generate_alpha();
-//   update_distributions();
-// }
-
-// setup = () => {
-//   createCanvas(1000, 1000);
-//   background("#F6F6F6");
-//   env = new Environment();
-//   init();
-// }
-
-// draw = () => {
-//   background("#F6F6F6");
-//   //env.display();
-//   for (let i = 0; i < distributions.length; i++) {
-//     distributions[i].display(j);
-//   }
-//   j += jj;
-//   if (j >= alpha.length - 1 | j < 0) {
-//     jj *= -1;
-//     j += jj;
-//   }
-// }
