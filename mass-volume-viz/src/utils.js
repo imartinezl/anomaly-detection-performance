@@ -1,7 +1,7 @@
 custom_gen = (seed) => {
     let num;
-    if (Math.random() > 0.5) num = p5.randomGaussian(0, 1);
-    else num = p5.randomGaussian(5, 1.5);
+    if (Math.random() > 0.5) num = rnorm(0, 1);
+    else num = rnorm(5, 1.5);
     return num
 }
 
@@ -10,7 +10,7 @@ custom_pdf = (x) => {
     return num
 }
 
-generateGaussian = (mean, std) => {
+rnorm = (mean, std) => {
     const _2PI = Math.PI * 2;
     var u1 = Math.random();
     var u2 = Math.random();

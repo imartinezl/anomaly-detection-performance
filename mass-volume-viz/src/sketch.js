@@ -24,8 +24,6 @@ let sketch = (p5) => {
     }
 
     let init_slider = () => {
-        // alpha_min_slider = p5.createSlider(0, 1, 0, 0.001);
-        // alpha_min_slider.position(10, 100);
         alpha_min_slider = document.getElementById('alpha-min-slider');
         alpha_min_slider.addEventListener('change', update);
     }
@@ -66,22 +64,22 @@ let sketch = (p5) => {
     let generate_distributions = (alpha) => {
         let n_x = 1000;
         let n_unif = 10000;
-        let posA = p5.createVector(300, 400);
-        let sclA = p5.createVector(70, -700);
+        let posA = p5.createVector(200, 400);
+        let sclA = p5.createVector(30, -700);
         let posB = p5.createVector(600, 400);
         let sclB = p5.createVector(300, -50);
 
-        let gen = { f: generateGaussian, p: [0, 1] };
+        let gen = { f: rnorm, p: [0, 1] };
         let pdf = { f: dnorm, p: [0, 1] };
-        // gen = { f: custom_gen, p: [] };
-        // pdf = { f: custom_pdf, p: [] };
+        gen = { f: custom_gen, p: [] };
+        pdf = { f: custom_pdf, p: [] };
         let dA = new Distribution(p5, n_x, n_unif, gen, pdf, alpha, posA, sclA, posB, sclB);
 
         posA = p5.createVector(300, 800);
         sclA = p5.createVector(70, -700);
         posB = p5.createVector(600, 800);
         sclB = p5.createVector(300, -50);
-        gen = { f: generateGaussian, p: [0, 1] };
+        gen = { f: rnorm, p: [0, 1] };
         pdf = { f: dnorm, p: [0, 1.2] };
         let dB = new Distribution(p5, n_x, n_unif, gen, pdf, alpha, posA, sclA, posB, sclB);
 
