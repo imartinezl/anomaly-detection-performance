@@ -3,5 +3,7 @@
 }
 
 body {
-    background-color: ivory;
+    background-color: #F6F6F6;
+    font-family: 'Staatliches', cursive;
+    overflow: hidden;
 }

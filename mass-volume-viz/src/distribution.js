@@ -39,7 +39,7 @@ export default class Distribution {
     }
 
     preload = () => {
-        this.fontRegular = this.p5.loadFont('./assets/Kulim_Park/KulimPark-Regular.ttf');
+        // this.fontRegular = this.p5.loadFont('./assets/Kulim_Park/KulimPark-Regular.ttf');
         // fontSemiBold = loadFont('assets/Kulim_Park/KulimPark-SemiBold.ttf');
         // fontBold = loadFont('assets/Kulim_Park/KulimPark-Bold.ttf');
     }
@@ -255,7 +255,7 @@ export default class Distribution {
         this.p5.fill(0);
         this.p5.noStroke();
         this.p5.textSize(16);
-        this.p5.textFont(this.fontRegular);
+        // this.p5.textFont(this.fontRegular);
         this.p5.textAlign(this.p5.RIGHT, this.p5.BOTTOM);
         this.p5.text("Volume\n(x)", 0, last.y);
         this.p5.textAlign(this.p5.LEFT, this.p5.TOP);
